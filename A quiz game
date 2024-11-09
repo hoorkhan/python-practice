@@ -1,0 +1,39 @@
+print("Welcome to my computer quiz!")
+playing= input("Do you want to play? ")
+if playing.lower() != "yes":
+    quit()
+
+print("okay let's play :)")
+score=0
+
+answer=input("What is a Data Structure? ")
+if answer == "A data structure is a storage format that defines the way data is stored, organized, and manipulated.":
+    print("Correct!")
+    score+=1
+else:
+    print("Incorrect!")
+
+answer=input("What is an Array? ")
+if answer == "An array is commonly referred to as a collection of items stored at contiguous memory locations.":
+    print("Correct!")
+    score+=1
+else:
+    print("Incorrect!")
+    
+answer=input("What is a Linked List? ")
+if answer == "Like an array, a linked list refers to a linear data structure in which the elements are not necessarily stored in a contiguous manner.":
+    print("Correct!")
+    score+=1
+else:
+    print("Incorrect!")
+    
+answer=input("What is LIFO?")
+if answer == "LIFO is an abbreviation for Last In First Out.":
+    print("Correct!")
+    score+=1
+else:
+    print("Incorrect!")
+
+print("You got "+ str(score) + " questions correct!")
+print("You got "+ str((score/4 )* 100) + "%")
+    
