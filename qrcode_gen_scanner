@@ -1,0 +1,108 @@
+import tkinter as tk
+import cv2
+import qrcode
+import re
+import pyzxing
+from tkinter import messagebox
+from PIL import Image, ImageTk
+
+def is_strong_password(password):
+    special_characters = r"[!@#$%^&*(),.?\":{}|<>]"
+    if len(password) < 8:
+        messagebox.showerror("Error", "Password too short! It should be at least 8 characters long.")
+        return False
+    if not re.search(special_characters, password):
+        messagebox.showerror("Error", "Password should contain at least one special character.")
+        return False
+    if not re.search(r"[A-Z]", password):
+        messagebox.showerror("Error", "Password should contain at least one uppercase letter.")
+        return False
+    if not re.search(r"[a-z]", password):
+        messagebox.showerror("Error", "Password should contain at least one lowercase letter.")
+        return False
+    if not re.search(r"[0-9]", password):
+        messagebox.showerror("Error", "Password should contain at least one digit.")
+        return False
+    return True
+def generate_qr_code():
+    password = entry_password.get()
+    if not is_strong_password(password):
+        return
+
+    qr = qrcode.QRCode(
+        version=1,
+        error_correction=qrcode.constants.ERROR_CORRECT_L,
+        box_size=10,
+        border=4,
+    )
+    qr.add_data(password)
+    qr.make(fit=True)
+
+    img = qr.make_image(fill='black', back_color='lightblue')
+    qr_file_path = "password_qr_code.png"
+    img.save(qr_file_path)
+
+    
+    qr_image = Image.open(qr_file_path)
+    qr_image = qr_image.resize((250, 250))  # Resize for GUI display
+    qr_photo = ImageTk.PhotoImage(qr_image)
+
+    qr_label.config(image=qr_photo)
+    qr_label.image = qr_photo
+    messagebox.showinfo("Success", "QR code generated successfully!")
+
+def scan_qr_code_with_pyzxing():
+    reader = pyzxing.BarCodeReader()
+    cap = cv2.VideoCapture(0)  
+    messagebox.showinfo("Info", "Scanning for QR Code... Hold the QR Code in front of the camera.")
+    while True:
+        ret, frame = cap.read()
+        if not ret:
+            messagebox.showerror("Error", "Failed to access the camera.")
+            break
+
+        # Save the captured frame as an image
+        cv2.imwrite("captured_frame.png", frame)
+
+        # Decode the saved image
+        result = reader.decode("captured_frame.png")
+        if result:
+            qr_data = result[0]['raw']
+            messagebox.showinfo("QR Code Data", f"Decoded Data: {qr_data}")
+            cap.release()
+            cv2.destroyAllWindows()
+            return
+
+        
+        cv2.imshow("QR Code Scanner", frame)
+        if cv2.waitKey(1) & 0xFF == ord('q'):
+            messagebox.showinfo("Info", "Exiting scanner.")
+            break
+
+    cap.release()
+    cv2.destroyAllWindows()
+root = tk.Tk()
+root.title("QR Code Generator and Scanner")
+root.geometry("400x500")
+
+
+label_password = tk.Label(root, text="Enter a strong password:")
+label_password.pack(pady=10)
+entry_password = tk.Entry(root, show="*", width=30)
+entry_password.pack(pady=5)
+
+
+generate_button = tk.Button(root, text="Generate QR Code", command=generate_qr_code)
+generate_button.pack(pady=10)
+
+
+qr_label = tk.Label(root)
+qr_label.pack(pady=10)
+
+
+scan_button = tk.Button(root, text="Scan QR Code", command=scan_qr_code_with_pyzxing)
+scan_button.pack(pady=10)
+
+
+root.mainloop()
+
